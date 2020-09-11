@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/mvc
+       http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+
+    <context:component-scan base-package="org.javaboy.helloworld" use-default-filters="false">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <!--<bean class="org.javaboy.helloworld.MyController" name="/hello" />-->
+    <!--这个是处理器映射器，这种方式，请求地址其实就是一个 Bean 的名字，然后根据这个 bean 的名字查找对应的处理器-->
+    <!-- <bean class="org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping" id="handlerMapping">
+     </bean>-->
+    <!--<bean class="org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter" id="handlerAdapter"/>-->
+
+    <!--<bean class="org.javaboy.helloworld.MyController" id="myController" />-->
+    <!--<bean class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping" id="handlerMapping">
+        <property name="mappings">
+            <props>
+                &lt;!&ndash;<prop key="/hello">myController</prop>&ndash;&gt;
+                <prop key="/hello2">myController2</prop>
+            </props>
+        </property>
+    </bean>
+    <bean class="org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter" id="handlerAdapter"/>-->
+
+    <mvc:annotation-driven/>
+    <!--可以用这一行配置，代替 RequestMappingHandlerMapping 和 RequestMappingHandlerAdapter 的两行配置-->
+    <!--  <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping" id="handlerMapping"/>
+      <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter" id="handlerAdapter"/>-->
+
+    <!--视图解析器-->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" id="viewResolver">
+        <property name="prefix" value="/WEB-INF/views/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+    <mvc:annotation-driven conversion-service="conversionService"/>
+    <bean class="org.springframework.format.support.FormattingConversionServiceFactoryBean" id="conversionService">
+        <property name="converters">
+            <set>
+                <ref bean="dateConverter"/>
+            </set>
+        </property>
+    </bean>
+
+    <!--<bean class="org.springframework.web.multipart.commons.CommonsMultipartResolver" id="multipartResolver"/>-->
+    <!--<bean class="org.springframework.web.multipart.commons.CommonsMultipartResolver" id="multipartResolver">
+        &lt;!&ndash;默认的编码&ndash;&gt;
+        <property name="defaultEncoding" value="UTF-8"/>
+        &lt;!&ndash;上传的总文件大小&ndash;&gt;
+        <property name="maxUploadSize" value="1048576"/>
+        &lt;!&ndash;上传的单个文件大小&ndash;&gt;
+        <property name="maxUploadSizePerFile" value="1048576"/>
+        &lt;!&ndash;内存中最大的数据量，超过这个数据量，数据就要开始往硬盘中写了&ndash;&gt;
+        <property name="maxInMemorySize" value="4096"/>
+        &lt;!&ndash;临时目录，超过 maxInMemorySize 配置的大小后，数据开始往临时目录写，等全部上传完成后，再将数据合并到正式的文件上传目录&ndash;&gt;
+        <property name="uploadTempDir" value="file:///E:\\tmp"/>
+    </bean>-->
+    <bean class="org.springframework.web.multipart.support.StandardServletMultipartResolver" id="multipartResolver"></bean>
+
+    <mvc:resources location="/img/" mapping="/img/**"></mvc:resources>
+
+    <mvc:resources mapping="/static/html/**" location="/static/html/"/>
+    <mvc:resources mapping="/static/js/**" location="/static/js/"/>
+    <mvc:resources mapping="/static/css/**" location="/static/css/"/>
+
+    <bean class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean" id="validatorFactoryBean">
+        <property name="providerClass" value="org.hibernate.validator.HibernateValidator"/>
+        <property name="validationMessageSource" ref="bundleMessageSource"/>
+    </bean>
+    <bean class="org.springframework.context.support.ReloadableResourceBundleMessageSource" id="bundleMessageSource">
+        <property name="basenames" >
+            <list>
+                <value>classpath:MyMessage</value>
+            </list>
+        </property>
+        <property name="defaultEncoding" value="UTF-8"/>
+        <property name="useCodeAsDefaultMessage" value="false" />
+        <property name="cacheSeconds" value="300"/>
+    </bean>
+    <mvc:annotation-driven validator="validatorFactoryBean"/>
+
+    <!--<mvc:annotation-driven>
+        <mvc:message-converters>
+            <ref bean="httpMessageConverter"/>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+    <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter" id="httpMessageConverter">
+        <property name="objectMapper">
+            <bean class="com.fasterxml.jackson.databind.ObjectMapper">
+                <property name="dateFormat">
+                    <bean class="java.text.SimpleDateFormat">
+                        <constructor-arg name="pattern" value="yyyy-MM-dd HH:mm:ss"/>
+                    </bean>
+                </property>
+                <property name="timeZone" value="Asia/Shanghai"/>
+            </bean>
+        </property>
+    </bean>-->
+
+    <!--<mvc:annotation-driven>
+        <mvc:message-converters>
+            <ref bean="httpMessageConverter"/>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+    <bean class="org.springframework.http.converter.json.GsonHttpMessageConverter" id="httpMessageConverter">
+        <property name="gson">
+            <bean class="com.google.gson.Gson" factory-bean="gsonBuilder" factory-method="create"/>
+        </property>
+    </bean>
+    <bean class="com.google.gson.GsonBuilder" id="gsonBuilder">
+        <property name="dateFormat" value="yyyy-MM-dd"/>
+    </bean>-->
+
+    <mvc:annotation-driven>
+        <mvc:message-converters>
+            <ref bean="httpMessageConverter"/>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+    <bean class="com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter" id="httpMessageConverter">
+        <property name="fastJsonConfig">
+            <bean class="com.alibaba.fastjson.support.config.FastJsonConfig">
+                <property name="dateFormat" value="yyyy-MM-dd HH:mm:ss"/>
+            </bean>
+        </property>
+        <property name="supportedMediaTypes">
+            <list>
+                <value>application/json;charset=utf-8</value>
+            </list>
+        </property>
+    </bean>
+
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/**"/>
+            <ref bean="myInterceptor1"/>
+        </mvc:interceptor>
+        <mvc:interceptor>
+            <mvc:mapping path="/**"/>
+            <ref bean="myInterceptor2"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
+</beans>
